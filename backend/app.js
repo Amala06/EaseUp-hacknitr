@@ -1,63 +1,7 @@
-// const express=require('express');
-// const userRoute=require('./routes/routes');
-// const app=express();
-// const port=8080;
-// const rooms=['general','Discussion','Meeting'];
-// const cors=require('cors');
-// app.use(express.urlencoded({extended:true}));
-// app.use(express.json());
-// app.use(cors());
-
-// const server=require('http').createServer(app);
-// const io=require('socket.io')(server,{
-//     cors:{
-//         origin:'http://localhost:3000',
-//         methods:['GET','POST']
-//     }
-// })
-
-// require('./config/conn')
-// const path=require('path');
-
-// require('dotenv').config({
-//     path:path.join(__dirname,'.env')
-// })
-// app.use('/',userRoute);
-// console.log(process.env.DBPORT);
-// app.listen(port,()=>{
-//     console.log(`app is listening to http://localhost:${port}`)
-// })
-
-// const express=require('express');
-// const app=express();
-// const userRoute=require('./routes/Userroute');
-// const User=require('./models/User')
-// const rooms=['general','Discussion','Meeting'];
-// const cors=require('cors');
-// app.use(express.urlencoded({extended:true}));
-// app.use(express.json());
-// app.use(cors());
-
-// app.use('/users',userRoute)
-// require('./Connection');
-
-// const server=require('http').createServer(app);
-// const PORT=8080;
-// const io=require('socket.io')(server,{
-//     cors:{
-//                  origin:'http://localhost:8080',
-//                  methods:['GET','POST']
-//             }
-// })
-// app.get('/',(req,res)=>{
-//     res.send("hello backend is running ...")
-// })
-// server.listen(PORT,()=>{
-//     console.log(`app is listening to http://localhost:${PORT}`)
-// })
-
 const express = require("express");
 const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config({ path: __dirname + "/.env" });
 const chats = require("./data/Data");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const app = express();
@@ -65,12 +9,11 @@ const userRoutes = require("./newroutes/userRoutes");
 const chatRoutes = require("./newroutes/chatRoutes.js");
 const connectDB = require("./Connection");
 const messageRoutes = require("./newroutes/messageRoutes");
-dotenv.config();
 connectDB();
 const port = process.env.PORT || 8080;
-app.get("/", (req, res) => {
-  res.send("Api is running");
-});
+// app.get("/", (req, res) => {
+//   res.send("Api is running");
+// });
 // app.get('/api/chat',(req,res)=>{
 //     res.send(chats);
 // })
@@ -84,6 +27,24 @@ app.get("/api/chat/:id", (req, res) => {
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+
+//--------Deployment-------------
+const __dirname1 = path.resolve();
+console.log(process.env);
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/easeup/build")));
+  console.log("running in prod");
+  console.log(path.join(__dirname1, "/easeup/build"));
+
+  app.use("*", express.static(path.join(__dirname1, "/easeup/build")));
+  // res.sendFile(path.resolve(__dirname1, "easeup", "build", "index.html"));
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is Running successfully");
+  });
+}
+
+//--------Deployment-------------
 
 app.use(notFound);
 app.use(errorHandler);
